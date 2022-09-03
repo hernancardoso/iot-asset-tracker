@@ -286,6 +286,22 @@ extern "C"
 	int json_common_batch_data_add(cJSON *parent, enum json_common_buffer_type type, void *buf,
 								   size_t buf_count, const char *object_label);
 
+	/**
+	 * @brief Encode all queued entries in the passed in buffer and add it to the parent object
+	 *        as an array.
+	 *
+	 * @param[out] parent Pointer to object that the encoded data is added to.
+	 * @param[in] type Type of data passed in to the function.
+	 * @param[in] buf Pointer to data buffer that is to be encoded.
+	 * @param[in] buf_count Number of entries in passed in data buffer.
+	 * @param[in] object_label Name of the array entry that is added to the parent object.
+	 *
+	 * @return 0 on success. -ENODATA if the passed in data is not valid. Otherwise a negative error
+	 *         code is returned.
+	 */
+	int json_common_modo_1_data_add(cJSON *parent, enum json_common_buffer_type type, void *buf,
+									size_t buf_count, const char *object_label);
+
 #ifdef __cplusplus
 }
 #endif

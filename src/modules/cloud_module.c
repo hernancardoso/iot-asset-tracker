@@ -627,6 +627,25 @@ static void agps_data_request_send(struct data_module_event *evt)
 	}
 }
 
+static void modo_1_data_send(struct data_module_event *evt)
+{
+	int err;
+
+	err = cloud_wrap_modo_1_send(evt->data.buffer.buf, evt->data.buffer.len);
+	if (err)
+	{
+		LOG_ERR("cloud_wrap_modo_1_send, err: %d", err);
+		send_data_ack(evt->data.buffer.buf,
+					  evt->data.buffer.len,
+					  false);
+		return;
+	}
+
+	LOG_DBG("Modo 1 sent, data pointer: %p", evt->data.buffer.buf);
+
+	send_data_ack(evt->data.buffer.buf, evt->data.buffer.len, true);
+}
+
 #if defined(CONFIG_NRF_CLOUD_PGPS)
 static void pgps_request_send(struct cloud_codec_data *data)
 {

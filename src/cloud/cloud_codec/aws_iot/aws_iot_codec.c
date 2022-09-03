@@ -659,3 +659,67 @@ exit:
 	cJSON_Delete(root_obj);
 	return err;
 }
+
+int cloud_codec_encode_modo_1_data(struct cloud_codec_data *output,
+								   struct cloud_data_battery *bat_buf,
+								   size_t bat_buf_count)
+{
+	int err;
+	char *buffer;
+	bool object_added = false;
+
+	cJSON *root_obj = cJSON_CreateObject();
+
+	if (root_obj == NULL)
+	{
+		cJSON_Delete(root_obj);
+		return -ENOMEM;
+	}
+
+	err = json_common_batch_data_add(root_obj, JSON_COMMON_BATTERY,
+									 bat_buf, bat_buf_count,
+									 DATA_BATTERY);
+	if (err == 0)
+	{
+		object_added = true;
+	}
+	else if (err != -ENODATA)
+	{
+		goto exit;
+	}
+
+	if (!object_added)
+	{
+		err = -ENODATA;
+		LOG_DBG("No data to encode, JSON string empty...");
+		goto exit;
+	}
+	else
+	{
+		/* At this point err can be either 0 or -ENODATA. Explicitly set err to 0 if
+		 * objects has been added to the rootj object.
+		 */
+		err = 0;
+	}
+
+	buffer = cJSON_PrintUnformatted(root_obj);
+	if (buffer == NULL)
+	{
+		LOG_ERR("Failed to allocate memory for JSON string");
+
+		err = -ENOMEM;
+		goto exit;
+	}
+
+	if (IS_ENABLED(CONFIG_CLOUD_CODEC_LOG_LEVEL_DBG))
+	{
+		json_print_obj("Encoded batch message:\n", root_obj);
+	}
+
+	output->buf = buffer;
+	output->len = strlen(buffer);
+
+exit:
+	cJSON_Delete(root_obj);
+	return err;
+}

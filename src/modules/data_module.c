@@ -211,14 +211,6 @@ static bool event_handler(const struct event_header *eh)
 	struct data_msg_data msg = {0};
 	bool enqueue_msg = false;
 
-	if (is_modem_module_event(eh))
-	{
-		struct modem_module_event *event = cast_modem_module_event(eh);
-
-		msg.module.modem = *event;
-		enqueue_msg = true;
-	}
-
 	if (is_cloud_module_event(eh))
 	{
 		struct cloud_module_event *event = cast_cloud_module_event(eh);
@@ -227,11 +219,19 @@ static bool event_handler(const struct event_header *eh)
 		enqueue_msg = true;
 	}
 
-	if (is_gnss_module_event(eh))
+	if (is_app_module_event(eh))
 	{
-		struct gnss_module_event *event = cast_gnss_module_event(eh);
+		struct app_module_event *event = cast_app_module_event(eh);
 
-		msg.module.gnss = *event;
+		msg.module.app = *event;
+		enqueue_msg = true;
+	}
+
+	if (is_modem_module_event(eh))
+	{
+		struct modem_module_event *event = cast_modem_module_event(eh);
+
+		msg.module.modem = *event;
 		enqueue_msg = true;
 	}
 
@@ -244,19 +244,19 @@ static bool event_handler(const struct event_header *eh)
 		enqueue_msg = true;
 	}
 
+	if (is_gnss_module_event(eh))
+	{
+		struct gnss_module_event *event = cast_gnss_module_event(eh);
+
+		msg.module.gnss = *event;
+		enqueue_msg = true;
+	}
+
 	if (is_ui_module_event(eh))
 	{
 		struct ui_module_event *event = cast_ui_module_event(eh);
 
 		msg.module.ui = *event;
-		enqueue_msg = true;
-	}
-
-	if (is_app_module_event(eh))
-	{
-		struct app_module_event *event = cast_app_module_event(eh);
-
-		msg.module.app = *event;
 		enqueue_msg = true;
 	}
 
@@ -512,6 +512,7 @@ static int save_config(const void *buf, size_t buf_len)
 	return 0;
 }
 
+// Hace un setup de cosas de Zephyr
 static int setup(void)
 {
 	int err;
@@ -537,6 +538,7 @@ static int setup(void)
 	return 0;
 }
 
+// Imprime las configuraciones
 static void config_print_all(void)
 {
 	if (current_cfg.active_mode)
@@ -680,6 +682,25 @@ static void data_encode(void)
 										ARRAY_SIZE(ui_buf),
 										ARRAY_SIZE(accel_buf),
 										ARRAY_SIZE(bat_buf));
+	switch (err)
+	{
+	case 0:
+		LOG_DBG("Batch data encoded successfully");
+		data_send(DATA_EVT_DATA_SEND_BATCH, BATCH, &codec);
+		break;
+	case -ENODATA:
+		LOG_DBG("No batch data to encode, ringbuffers are empty");
+		break;
+	default:
+		LOG_ERR("Error batch-enconding data: %d", err);
+		SEND_ERROR(data, DATA_EVT_ERROR, err);
+		return;
+	}
+
+	err = cloud_codec_encode_modo_1_data(&codec,
+										 bat_buf,
+										 ARRAY_SIZE(bat_buf));
+
 	switch (err)
 	{
 	case 0:
@@ -1520,7 +1541,7 @@ static void module_thread_fn(void)
 
 	self.thread_id = k_current_get();
 
-	err = module_start(&self);
+	err = module_start(&self); // Crea un threaed para el
 	if (err)
 	{
 		LOG_ERR("Failed starting module, error: %d", err);

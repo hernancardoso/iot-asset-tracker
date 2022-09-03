@@ -299,6 +299,23 @@ extern "C"
 									  size_t accel_buf_count,
 									  size_t bat_buf_count);
 
+	int cloud_codec_encode_modo_1_data(struct cloud_codec_data *output,
+									   struct cloud_data_battery *bat_buf,
+									   size_t bat_buf_count);
+
+	//   struct cloud_data_gnss * gnss_buf,
+	//   struct cloud_data_sensors *sensor_buf,
+	//   struct cloud_data_modem_static *modem_stat_buf,
+	//   struct cloud_data_modem_dynamic *modem_dyn_buf,
+	//   struct cloud_data_ui *ui_buf,
+	//   size_t gnss_buf_count,
+	//   size_t sensor_buf_count,
+	//   size_t modem_stat_buf_count,
+	//   size_t modem_dyn_buf_count,
+	//   size_t ui_buf_count,
+	//   size_t accel_buf_count,
+	//   size_t bat_buf_count);
+
 	void cloud_codec_populate_sensor_buffer(
 		struct cloud_data_sensors *sensor_buffer,
 		struct cloud_data_sensors *new_sensor_data,

@@ -178,6 +178,16 @@ extern "C"
 	int cloud_wrap_neighbor_cells_send(char *buf, size_t len);
 
 	/**
+	 * @brief Send data to cloud.
+	 *
+	 * @param[in] buf Pointer to buffer containing data to be sent.
+	 * @param[in] len Length of buffer.
+	 *
+	 * @return 0 on success, or a negative error code on failure.
+	 */
+	int cloud_wrap_modo_1_send(char *buf, size_t len);
+
+	/**
 	 * @brief Send A-GPS request to cloud.
 	 *
 	 * @param[in] buf Pointer to buffer containing data to be sent.
